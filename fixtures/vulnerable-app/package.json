@@ -1,0 +1,13 @@
+{
+  "name": "vulnerable-app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "postinstall": "node -e \"console.log('setup')\""
+  },
+  "dependencies": {
+    "lodash": "4.17.20"
+  }
+}

@@ -1,0 +1,146 @@
+/* Space UI theme (generated from spaceui.one/r/lib-style.json cssVars, 2026-10-07)
+ * Space UI is MIT licensed. Tokens below are the Space UI theme vars; the
+ * `@theme inline` block maps them to Tailwind 4 color utilities.
+ * LaunchProof status/severity semantics are appended (design layer). */
+@import "tailwindcss";
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: var(--color-white);
+  --foreground: var(--color-zinc-950);
+  --muted: var(--color-zinc-100);
+  --muted-foreground: var(--color-zinc-600);
+  --card: var(--color-white);
+  --card-foreground: var(--color-zinc-950);
+  --border: --alpha(var(--color-black) / 8%);
+  --pill-active-bg: --alpha(var(--color-black) / 10%);
+  --popover: var(--color-white);
+  --popover-foreground: var(--color-zinc-950);
+  --primary: var(--color-zinc-950);
+  --primary-foreground: var(--color-white);
+  --secondary: var(--color-zinc-100);
+  --secondary-foreground: var(--color-zinc-700);
+  --accent: var(--color-zinc-100);
+  --accent-foreground: var(--color-zinc-950);
+  --input: --alpha(var(--color-black) / 8%);
+  --ring: transparent;
+  --info: var(--color-blue-100);
+  --info-foreground: var(--color-blue-900);
+  --success: var(--color-emerald-100);
+  --success-foreground: var(--color-emerald-900);
+  --warning: var(--color-amber-100);
+  --warning-foreground: var(--color-amber-900);
+  --error: var(--color-red-100);
+  --error-foreground: var(--color-red-900);
+  --destructive: var(--color-red-500);
+  --destructive-foreground: var(--color-red-500);
+  --chart-1: var(--color-orange-600);
+  --chart-2: var(--color-teal-600);
+  --chart-3: var(--color-cyan-900);
+  --chart-4: var(--color-amber-400);
+  --chart-5: var(--color-amber-500);
+    --font-sans: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  --font-mono: var(--font-mono, ui-monospace, monospace);
+  --font-heading: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+}
+
+.dark {
+  --background: var(--color-zinc-950);
+  --foreground: var(--color-white);
+  --muted: hsl(0deg 0% 10.2%);
+  --muted-foreground: var(--color-zinc-400);
+  --card: var(--color-zinc-950);
+  --card-foreground: var(--color-zinc-50);
+  --border: --alpha(var(--color-white) / 8%);
+  --pill-active-bg: --alpha(var(--color-white) / 14%);
+  --popover: var(--color-zinc-950);
+  --popover-foreground: var(--color-zinc-50);
+  --primary: var(--color-zinc-50);
+  --primary-foreground: var(--color-zinc-950);
+  --secondary: var(--color-zinc-800);
+  --secondary-foreground: var(--color-zinc-50);
+  --accent: hsl(0deg 2.2% 8.47%);
+  --accent-foreground: var(--color-zinc-50);
+  --input: --alpha(var(--color-white) / 10%);
+  --ring: transparent;
+  --info: var(--color-blue-100);
+  --info-foreground: var(--color-blue-800);
+  --success: var(--color-emerald-100);
+  --success-foreground: var(--color-emerald-800);
+  --warning: var(--color-amber-100);
+  --warning-foreground: var(--color-amber-800);
+  --error: var(--color-red-100);
+  --error-foreground: var(--color-red-800);
+  --destructive: var(--color-red-800);
+  --destructive-foreground: var(--color-red-400);
+  --chart-1: var(--color-blue-700);
+  --chart-2: var(--color-emerald-500);
+  --chart-3: var(--color-amber-500);
+  --chart-4: var(--color-purple-500);
+  --chart-5: var(--color-rose-500);
+}
+
+@theme inline {
+  --font-sans: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  --font-mono: var(--font-mono, ui-monospace, monospace);
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-border: var(--border);
+    --color-pill-active-bg: var(--pill-active-bg);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-info: var(--info);
+    --color-info-foreground: var(--info-foreground);
+    --color-success: var(--success);
+    --color-success-foreground: var(--success-foreground);
+    --color-warning: var(--warning);
+    --color-warning-foreground: var(--warning-foreground);
+    --color-error: var(--error);
+    --color-error-foreground: var(--error-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+}
+
+/* LaunchProof design layer: verification status semantics (one meaning, everywhere) */
+:root {
+  --lp-status-pass: var(--success);
+  --lp-status-pass-fg: var(--success-foreground);
+  --lp-status-block: var(--error);
+  --lp-status-block-fg: var(--error-foreground);
+  --lp-status-warn: var(--warning);
+  --lp-status-warn-fg: var(--warning-foreground);
+  --lp-status-unverified: var(--muted);
+  --lp-status-unverified-fg: var(--muted-foreground);
+  --lp-status-skipped: var(--muted);
+  --lp-status-skipped-fg: var(--muted-foreground);
+  --lp-status-error: var(--destructive);
+  --lp-status-error-fg: var(--destructive-foreground);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

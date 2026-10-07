@@ -1,0 +1,127 @@
+{
+  "budget_used": 4,
+  "context_summary": "Iterations 1-3: Full product built and verified. P0 DESIGN.md (263 lines). P1 daemon (server/store/main: JSON API+SSE, cancel, crash recovery, 429 concurrency). P2 discovery+contract (22-rule detector, change analysis, infer/validate). P3 engine + 33 checks (22 det/10 dyn/1 agentic), result invariants enforced. P4 runtime lab + 2 fixtures. P5 browser verifier (playwright, 3 flow checks). P6 DB+API checks. P7 agent gateway (codex/claude/script adapters, gaps honest). P8 adversarial planner + ADV-001. P9 control plane UI served by daemon. P10 fix loop (approval-gated). P11 CI workflow + reusable action. P12 study harness + results.json (2 repos, 50% blocker rate on fixtures). P13 deferred: Tauri packaging (no webkit2gtk), live GH Actions run, public release approval. Evidence: tsc clean, 26/26 tests, e2e PASS, study measured.",
+  "created_at": "2026-10-06T18:05:00Z",
+  "criteria": [
+    {
+      "check": "cd /home/shiva/projects/dracula && npx tsc --noEmit -p tsconfig.json",
+      "label": "Typecheck clean",
+      "must_pass": true
+    },
+    {
+      "check": "cd /home/shiva/projects/dracula && npm test",
+      "label": "All tests pass (unit+integration, node --test)",
+      "must_pass": true
+    },
+    {
+      "check": "cd /home/shiva/projects/dracula && node --test test/checks.test.ts test/result.test.ts",
+      "label": ">=15 deterministic checks with stable IDs; every BLOCK carries evidence; SKIPPED/UNVERIFIED/ERROR never PASS (asserted by tests)",
+      "must_pass": true
+    },
+    {
+      "check": "cd /home/shiva/projects/dracula && bash scripts/e2e.sh",
+      "label": "E2E reproducible run: vulnerable fixture => BLOCK (exit 1), fixed fixture => READY (exit 0)",
+      "must_pass": true
+    },
+    {
+      "check": "cd /home/shiva/projects/dracula && node --test --test-concurrency=1 test/daemon.test.ts",
+      "label": "CLI executes verification without desktop UI; daemon cancel/recovery covered by tests",
+      "must_pass": true
+    },
+    {
+      "check": "test -s /home/shiva/projects/dracula/docs/product/DESIGN.md && test -s /home/shiva/projects/dracula/docs/product/PROGRESS.md",
+      "label": "docs/product/DESIGN.md and docs/product/PROGRESS.md exist and are current",
+      "must_pass": true
+    }
+  ],
+  "current_task": 14,
+  "id": "1a7c3e",
+  "iterations": 4,
+  "max_iterations": 60,
+  "negative_knowledge": [
+    "Do not use packages/*/ paths: repo layout is src/*/ + test/*. Do not use pnpm typecheck/test scripts: use npx tsc and npm test. Tauri not buildable here (no webkit2gtk); control-plane contract is the P9 evidence."
+  ],
+  "objective": "Plan and build LaunchProof end-to-end (P0-P13): local verification daemon, discovery, deterministic+dynamic+agentic verification engine, agent gateway (Codex/Claude Code), fix-and-reverify loop, desktop control plane, CLI, CI integration, and validation study, with tests and evidence for every claimed capability.",
+  "scope": "/home/shiva/projects/dracula",
+  "scope_flex": [
+    "/tmp/opencode",
+    "~/.launchproof"
+  ],
+  "scope_lock": [
+    "/home/shiva/projects/dracula"
+  ],
+  "slug": "build-launchproof-verify-1a7c3e",
+  "status": "completed",
+  "tasks": [
+    {
+      "desc": "P0 DESIGN.md",
+      "id": 1,
+      "status": "done"
+    },
+    {
+      "desc": "P1 scaffold + daemon foundation",
+      "id": 2,
+      "status": "done"
+    },
+    {
+      "desc": "P2 discovery + contract",
+      "id": 3,
+      "status": "done"
+    },
+    {
+      "desc": "P3 engine + deterministic checks + evidence",
+      "id": 4,
+      "status": "done"
+    },
+    {
+      "desc": "P4 runtime lab + fixtures",
+      "id": 5,
+      "status": "done"
+    },
+    {
+      "desc": "P5 browser verifier",
+      "id": 6,
+      "status": "done"
+    },
+    {
+      "desc": "P6 database + API verifier",
+      "id": 7,
+      "status": "done"
+    },
+    {
+      "desc": "P7 agent gateway",
+      "id": 8,
+      "status": "done"
+    },
+    {
+      "desc": "P8 adversarial verifier",
+      "id": 9,
+      "status": "done"
+    },
+    {
+      "desc": "P9 desktop control plane",
+      "id": 10,
+      "status": "done"
+    },
+    {
+      "desc": "P10 fix-and-reverify loop",
+      "id": 11,
+      "status": "done"
+    },
+    {
+      "desc": "P11 CI integration",
+      "id": 12,
+      "status": "done"
+    },
+    {
+      "desc": "P12 validation study",
+      "id": 13,
+      "status": "done"
+    },
+    {
+      "desc": "P13 release prep + final report",
+      "id": 14,
+      "status": "done"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+name: launchproof
+
+on:
+  pull_request:
+  push:
+    branches: [master, main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci 2>/dev/null || npm install
+      - run: npx tsc --noEmit -p tsconfig.json
+      - run: node --test --test-concurrency=2 "test/**/*.test.ts"
+      - name: LaunchProof verify (vulnerable fixture must BLOCK)
+        run: |
+          set +e
+          node bin/launchproof.js verify fixtures/vulnerable-app --json > /tmp/vuln.json
+          code=$?
+          set -e
+          test "$code" -eq 1
+          grep -Eq '"verdict": *"BLOCKED"' /tmp/vuln.json
+      - name: LaunchProof verify (secure fixture must stay READY)
+        run: |
+          node bin/launchproof.js verify fixtures/secure-app --json > /tmp/secure.json
+          grep -Eq '"verdict": *"READY"' /tmp/secure.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: launchproof-ci-reports
+          path: /tmp/*.json

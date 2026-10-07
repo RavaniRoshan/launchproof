@@ -1,0 +1,29 @@
+{
+  "name": "launchproof",
+  "version": "0.1.0",
+  "description": "Independent launch-readiness verification for agent-built applications",
+  "license": "Apache-2.0",
+  "type": "module",
+  "bin": {
+    "launchproof": "bin/launchproof.js"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node --test --test-concurrency=2 \"test/**/*.test.ts\"",
+    "test:one": "node --test --test-concurrency=1",
+    "daemon": "node src/daemon/main.ts",
+    "e2e": "bash scripts/e2e.sh",
+    "study": "bash scripts/study.sh"
+  },
+  "dependencies": {
+    "playwright": "1.63.0",
+    "yaml": "2.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "typescript": "5.9.3"
+  }
+}

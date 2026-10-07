@@ -1,0 +1,64 @@
+name: LaunchProof
+
+description: Independent launch-readiness verification for agent-built apps
+author: LaunchProof
+
+inputs:
+  path:
+    description: Project path to verify
+    required: false
+    default: .
+  profile:
+    description: Verification profile
+    required: false
+    default: launch
+  strict:
+    description: Promote UNVERIFIED/ERROR to blocking
+    required: false
+    default: 'false'
+  only:
+    description: Comma-separated check ids
+    required: false
+    default: ''
+  node-version:
+    description: Node version
+    required: false
+    default: '24'
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+    - id: verify
+      run: |
+        ARGS="verify ${{ inputs.path }} --profile ${{ inputs.profile }} --json"
+        if [[ "${{ inputs.strict }}" == "true" ]]; then ARGS="$ARGS --strict"; fi
+        if [[ -n "${{ inputs.only }}" ]]; then ARGS="$ARGS --only ${{ inputs.only }}"; fi
+        node "${{ github.action_path }}/../../../bin/launchproof.js" $ARGS > launchproof-report.json
+        CODE=$?
+        echo "exit=$CODE" >> "$GITHUB_OUTPUT"
+        VERDICT=$(node -e "const r=require('./launchproof-report.json');console.log(r.verdict)")
+        echo "verdict=$VERDICT" >> "$GITHUB_OUTPUT"
+        node -e "
+          const r = require('./launchproof-report.json');
+          for (const item of r.results || []) {
+            if (item.status === 'BLOCK') console.log(\`::error title=LaunchProof \${item.checkId}::\${item.title} — \${item.observed || item.reason || ''}\`.slice(0, 2000));
+            else if (item.status === 'WARN') console.log(\`::warning title=LaunchProof \${item.checkId}::\${item.title}\`.slice(0, 2000));
+          }
+        "
+        if [[ "$CODE" -ne 0 ]]; then
+          echo "LaunchProof verdict: $VERDICT (see launchproof-report.json)"
+          exit "$CODE"
+        fi
+      shell: bash
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: launchproof-report
+        path: launchproof-report.json
+
+branding:
+  icon: shield
+  color: blue

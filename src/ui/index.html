@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LaunchProof — Control Plane</title>
+<style>
+  :root { color-scheme: dark; --bg:#0c0f14; --panel:#141922; --line:#232b3a; --fg:#e6ecf5; --mut:#93a0b5; --ok:#3fb950; --bad:#f85149; --warn:#d29922; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+  header { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--bg); }
+  header h1 { font-size:15px; margin:0; letter-spacing:.4px; }
+  header .verdict { margin-left:auto; font-weight:700; padding:4px 12px; border-radius:999px; border:1px solid var(--line); }
+  .verdict.READY { color:var(--ok); border-color:var(--ok); }
+  .verdict.BLOCKED { color:var(--bad); border-color:var(--bad); }
+  nav { display:flex; gap:4px; padding:8px 16px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  nav button { background:none; border:1px solid transparent; color:var(--mut); padding:6px 10px; border-radius:8px; cursor:pointer; }
+  nav button.active { color:var(--fg); border-color:var(--line); background:var(--panel); }
+  main { display:grid; grid-template-columns: 300px 1fr; gap:0; min-height: calc(100vh - 110px); }
+  aside { border-right:1px solid var(--line); padding:12px; }
+  section { padding:12px 16px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:12px; margin-bottom:12px; }
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  input, select, textarea { background:#0a0d12; color:var(--fg); border:1px solid var(--line); border-radius:8px; padding:8px; width:100%; }
+  button.primary { background:#1f6feb; border:1px solid #1f6feb; color:#fff; border-radius:8px; padding:8px 12px; cursor:pointer; }
+  button.ghost { background:none; border:1px solid var(--line); color:var(--fg); border-radius:8px; padding:8px 12px; cursor:pointer; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  .pill { display:inline-block; padding:1px 8px; border-radius:999px; border:1px solid var(--line); font-size:12px; }
+  .PASS { color:var(--ok); } .BLOCK { color:var(--bad); } .WARN { color:var(--warn); }
+  .SKIPPED,.UNVERIFIED,.ERROR { color:var(--mut); }
+  pre { white-space:pre-wrap; word-break:break-word; background:#0a0d12; padding:10px; border-radius:8px; border:1px solid var(--line); max-height:320px; overflow:auto; }
+  .phase { display:flex; gap:8px; align-items:center; padding:2px 0; }
+  .dot { width:10px; height:10px; border-radius:50%; background:#333; }
+  .dot.running { background:var(--warn); } .dot.done { background:var(--ok); } .dot.error { background:var(--bad); }
+  small.mut { color:var(--mut); }
+</style>
+</head>
+<body>
+<header>
+  <h1>LAUNCHPROOF</h1>
+  <small class="mut" id="daemon">daemon: …</small>
+  <div class="verdict" id="verdict">—</div>
+</header>
+<nav id="tabs">
+  <button data-tab="projects" class="active">Projects</button>
+  <button data-tab="verification">Verification</button>
+  <button data-tab="findings">Findings</button>
+  <button data-tab="evidence">Evidence</button>
+  <button data-tab="agents">Agents</button>
+  <button data-tab="history">History</button>
+  <button data-tab="settings">Settings</button>
+</nav>
+<main>
+  <aside>
+    <div class="card">
+      <h3 style="margin:0 0 8px">Project</h3>
+      <input id="projectPath" placeholder="/path/to/app" />
+      <div class="row" style="margin-top:8px">
+        <select id="profile">
+          <option value="quick">quick</option>
+          <option value="launch" selected>launch</option>
+          <option value="security">security</option>
+          <option value="agent-change">agent-change</option>
+          <option value="stack">stack</option>
+          <option value="custom">custom</option>
+        </select>
+      </div>
+      <label style="display:flex;gap:6px;align-items:center;margin-top:8px"><input type="checkbox" id="strict" style="width:auto" /> strict (UNVERIFIED blocks)</label>
+      <div class="row" style="margin-top:8px">
+        <button class="primary" id="verifyBtn">Verify</button>
+        <button class="ghost" id="cancelBtn">Cancel</button>
+      </div>
+      <small class="mut" id="runMeta">no run yet</small>
+    </div>
+    <div class="card">
+      <h3 style="margin:0 0 8px">Phases</h3>
+      <div id="phases"></div>
+    </div>
+  </aside>
+  <section>
+    <div class="card" id="tab-projects">
+      <h3>Projects</h3>
+      <div id="projects"></div>
+    </div>
+    <div class="card" id="tab-verification" hidden>
+      <h3>Live progress</h3>
+      <pre id="events">events appear here…</pre>
+    </div>
+    <div class="card" id="tab-findings" hidden>
+      <h3>Findings <small class="mut">every BLOCK links to its evidence</small></h3>
+      <table><thead><tr><th>ID</th><th>Status</th><th>Severity</th><th>Observed</th><th>Evidence</th></tr></thead><tbody id="findings"></tbody></table>
+    </div>
+    <div class="card" id="tab-evidence" hidden>
+      <h3>Evidence ledger</h3>
+      <div id="evidence"></div>
+    </div>
+    <div class="card" id="tab-agents" hidden>
+      <h3>Agent gateway</h3>
+      <div class="row">
+        <select id="agentSel"><option value="codex">codex</option><option value="claude">claude</option><option value="script" selected>script</option></select>
+        <button class="ghost" id="agentCheck">Check availability</button>
+      </div>
+      <pre id="agentOut">agent capability gaps appear here. The verifier never depends on an agent; fix requests always need approval and independent re-verification.</pre>
+      <h4>Fix a blocker</h4>
+      <div class="row"><input id="fixCheck" placeholder="CHECK-ID e.g. AUTH-002" /><button class="primary" id="fixBtn">Generate fix instruction</button></div>
+      <pre id="fixOut">pick a BLOCK/WARN row first.</pre>
+    </div>
+    <div class="card" id="tab-history" hidden>
+      <h3>History <small class="mut">survives restart (local runs/)</small></h3>
+      <div id="history"></div>
+    </div>
+    <div class="card" id="tab-settings" hidden>
+      <h3>Policies &amp; settings</h3>
+      <p><small class="mut">Local-first: nothing leaves this machine unless you configure it. Verification artifacts are scrubbed before persistence.</small></p>
+      <label>Home directory<input id="homeDir" placeholder="~/.launchproof" /></label>
+      <p><small class="mut">Limits: a READY verdict is not a security guarantee. SKIPPED / UNVERIFIED / ERROR are never passes. No production targets. No silent source edits.</small></p>
+    </div>
+  </section>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+let currentRun = null;
+let lastResults = [];
+
+document.querySelectorAll('#tabs button').forEach((b) => {
+  b.onclick = () => {
+    document.querySelectorAll('#tabs button').forEach((x) => x.classList.remove('active'));
+    b.classList.add('active');
+    const tab = b.dataset.tab;
+    for (const name of ['projects','verification','findings','evidence','agents','history','settings']) {
+      $('tab-' + name).hidden = name !== tab;
+    }
+    if (tab === 'projects') loadProjects();
+    if (tab === 'history') loadHistory();
+  };
+});
+
+async function api(method, route, body) {
+  const res = await fetch(route, { method, headers: { 'content-type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  return res.json();
+}
+
+async function health() {
+  try {
+    const h = await api('GET', '/health');
+    $('daemon').textContent = `daemon: ok · runs=${h.runs} · ${h.version}`;
+  } catch { $('daemon').textContent = 'daemon: unreachable'; }
+}
+
+async function loadProjects() {
+  const { projects } = await api('GET', '/api/projects');
+  $('projects').innerHTML = (projects || []).map((p) => `<div class="phase"><span class="dot done"></span><span><b>${p.name}</b><br><small class="mut">${p.path} · last ${p.lastRunId || '—'}</small></span></div>`).join('') || '<small class="mut">no projects yet — enter a path and Verify.</small>';
+}
+
+async function loadHistory() {
+  const { live, recent } = await api('GET', '/api/runs');
+  $('history').innerHTML = `<small class="mut">live: ${(live || []).map((r) => r.id).join(', ') || 'none'}</small>` +
+    (recent || []).map((id) => `<div class="row" style="margin-top:6px"><code>${id}</code><button class="ghost" data-run="${id}">Open</button></div>`).join('');
+  document.querySelectorAll('[data-run]').forEach((b) => { b.onclick = () => openRun(b.dataset.run); });
+}
+
+async function openRun(runId) {
+  const report = await api('GET', `/api/runs/${runId}/report`);
+  renderReport(runId, report.run || report, report.results || report.report?.results || report.results || []);
+}
+
+function renderReport(runId, run, results) {
+  lastResults = results || [];
+  // Verdict comes from the daemon only — the frontend never computes results (UI21).
+  const verdict = run.verdict;
+  const el = $('verdict');
+  el.textContent = verdict;
+  el.className = 'verdict ' + verdict;
+  $('runMeta').textContent = `run ${runId} · ${run.profile || ''} · ${run.status || ''}`;
+  $('findings').innerHTML = lastResults.map((r) => `<tr><td><b>${r.checkId}</b></td><td class="${r.status}">${r.status}</td><td>${r.severity}</td><td>${(r.observed || r.reason || '').slice(0, 220)}</td><td>${(r.evidence || []).map((e) => e.id || e).join(' ')}</td></tr>`).join('');
+  const phases = run.phases || [];
+  $('phases').innerHTML = phases.map((p) => `<div class="phase"><span class="dot ${p.status === 'done' ? 'done' : p.status === 'running' ? 'running' : p.status === 'error' ? 'error' : ''}"></span><span>${p.id} <small class="mut">${p.status}${p.note ? ' · ' + p.note : ''}</small></span></div>`).join('') || '<small class="mut">phases appear during a run</small>';
+}
+
+$('verifyBtn').onclick = async () => {
+  const p = $('projectPath').value.trim() || '.';
+  await api('POST', '/api/projects', { path: p, name: p.split('/').pop() });
+  const started = await api('POST', '/api/verify', { path: p, profile: $('profile').value, strict: $('strict').checked });
+  if (started.error) { $('events').textContent = 'error: ' + started.error; return; }
+  currentRun = started.run.id;
+  document.querySelector('[data-tab="verification"]').click();
+  $('events').textContent = '';
+  const es = new EventSource(`/api/runs/${currentRun}/events`);
+  es.onmessage = async (m) => {
+    const ev = JSON.parse(m.data);
+    $('events').textContent += JSON.stringify(ev).slice(0, 300) + '\n';
+    $('events').scrollTop = 1e6;
+    if (ev.type === 'run.finished' || ev.type === 'run.cancelled' || ev.type === 'run.error') {
+      es.close();
+      const report = await api('GET', `/api/runs/${currentRun}/report`);
+      renderReport(currentRun, report.run || {}, report.results || []);
+      loadHistory();
+    }
+    if (ev.type === 'check.finished' && ev.result) {
+      const r = ev.result;
+      lastResults = [...lastResults.filter((x) => x.checkId !== r.checkId), r];
+      $('findings').innerHTML = lastResults.map((x) => `<tr><td><b>${x.checkId}</b></td><td class="${x.status}">${x.status}</td><td>${x.severity}</td><td>${(x.observed || x.reason || '').slice(0, 220)}</td><td>${(x.evidence || []).map((e) => e.id || e).join(' ')}</td></tr>`).join('');
+      if (r.status === 'BLOCK') { const el = $('verdict'); el.textContent = 'BLOCKED'; el.className = 'verdict BLOCKED'; }
+    }
+  };
+};
+
+$('cancelBtn').onclick = async () => {
+  if (!currentRun) return;
+  await api('POST', `/api/runs/${currentRun}/cancel`, {});
+};
+
+$('agentCheck').onclick = async () => {
+  $('agentOut').textContent = 'The daemon proxies agent capability discovery; run `launchproof doctor` for full local capability output.\nSelected adapter: ' + $('agentSel').value + '\nGaps are recorded, never invented: if the binary is missing the adapter reports unavailable and fix requests stay manual.';
+};
+
+$('fixBtn').onclick = () => {
+  const id = $('fixCheck').value.trim().toUpperCase();
+  const hit = lastResults.find((r) => r.checkId === id);
+  if (!hit) { $('fixOut').textContent = 'check not in current results: ' + id; return; }
+  $('fixOut').textContent = `Fix ${id} via ${$('agentSel').value} (requires approval in CLI: launchproof fix ${id} --approve)\n\nEvidence: ${hit.observed || hit.reason || ''}\nInvariant: see launchproof explain ${id}\n\nConstraints:\n- Do not change unrelated functionality.\n- Do not weaken existing security checks.\n\nAfter modification: independently re-run 'launchproof verify --only ${id}'. Agent output is never evidence.`;
+};
+
+health();
+loadProjects();
+</script>
+</body>
+</html>

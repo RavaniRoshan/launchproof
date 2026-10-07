@@ -1,0 +1,96 @@
+version: 1
+project:
+  name: vulnerable-app
+stack:
+  framework: none
+  database: postgresql
+  auth: custom-auth
+  payments: stripe
+surfaces:
+  public_web: true
+  api: true
+  user_accounts: true
+  payments: true
+  webhooks: true
+  file_storage: false
+required:
+  authentication: true
+  authorization: true
+  database_isolation: true
+  webhook_signature_verification: true
+  secret_boundary: true
+risk:
+  handles_personal_data: true
+  handles_payments: true
+  public_internet: false
+environment: local
+probes:
+  baseUrl: http://127.0.0.1:4310
+  identities:
+    - id: alice
+      label: Alice owner of p_alice
+      login:
+        path: /api/login
+        method: POST
+        body:
+          email: alice@example.com
+          password: pw-alice-1234
+    - id: bob
+      label: Bob owner of p_bob
+      login:
+        path: /api/login
+        method: POST
+        body:
+          email: bob@example.com
+          password: pw-bob-12345
+  endpoints:
+    - id: bob_project
+      method: GET
+      path: /api/projects/p_bob
+      purpose: resource
+      ownedBy: bob
+      expectUnauthenticated: [401, 403, 404]
+      expectForbidden: [403, 404]
+    - id: alice_project
+      method: GET
+      path: /api/projects/p_alice
+      purpose: resource
+      ownedBy: alice
+      expectUnauthenticated: [401, 403, 404]
+    - id: admin_stats
+      method: GET
+      path: /api/admin/stats
+      purpose: admin
+      expectUnauthenticated: [401, 403, 404]
+    - id: create_project
+      method: POST
+      path: /api/projects
+      purpose: other
+      body:
+        name: Probe Project
+        priceId: pro_probe_1
+    - id: stripe_webhook
+      method: POST
+      path: /api/webhooks/stripe
+      purpose: webhook
+      body:
+        id: evt_probe_1
+        type: payment_intent.succeeded
+  session:
+    logout: /api/logout
+    recheckPath: /api/projects/p_alice
+  flows:
+    - id: create-project
+      identity: alice
+      steps: [alice_project, create_project]
+  browser:
+    login:
+      path: /login
+      userSelector: "#email"
+      passSelector: "#password"
+      submitSelector: "#submit"
+    protectedPaths: [/dashboard]
+    crossUserPaths:
+      - path: /projects/p_bob
+        owner: bob
+    logoutPath: /api/logout

@@ -1,0 +1,14 @@
+services:
+  app:
+    build: .
+    ports:
+      - "4310:4310"
+    environment:
+      - DATABASE_URL=postgres://launchproof:vulnerable-password@db:5432/app
+      - SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.vulnerable-service-role-secret
+      - POSTGRES_PASSWORD=vulnerable-password
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: vulnerable-password
+      POSTGRES_DB: app

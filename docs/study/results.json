@@ -1,0 +1,183 @@
+{
+  "generatedAt": "2026-10-07T00:10:36.325Z",
+  "hypothesis": "Agent-built applications frequently satisfy builder tests while failing independent launch-readiness checks",
+  "repositories": 2,
+  "failing": 1,
+  "blockerRate": 0.5,
+  "totalBlockers": 23,
+  "totalCritical": 22,
+  "totalRuntimeMs": 7149,
+  "results": [
+    {
+      "repo": "vulnerable-app",
+      "source": "fixtures/vulnerable-app",
+      "verdict": "BLOCKED",
+      "exit": 1,
+      "runtimeMs": 5224,
+      "checks": 33,
+      "blockers": 23,
+      "critical": 22,
+      "warnings": 9,
+      "unverified": 0,
+      "byDomain": {
+        "API": {
+          "pass": 0,
+          "block": 1,
+          "warn": 2
+        },
+        "AUTH": {
+          "pass": 0,
+          "block": 4,
+          "warn": 1
+        },
+        "BROWSER": {
+          "pass": 0,
+          "block": 4,
+          "warn": 0
+        },
+        "ENV": {
+          "pass": 0,
+          "block": 1,
+          "warn": 0
+        },
+        "OBS": {
+          "pass": 0,
+          "block": 0,
+          "warn": 1
+        },
+        "PAY": {
+          "pass": 0,
+          "block": 3,
+          "warn": 0
+        },
+        "REPO": {
+          "pass": 0,
+          "block": 0,
+          "warn": 2
+        },
+        "SECRET": {
+          "pass": 0,
+          "block": 2,
+          "warn": 0
+        },
+        "DEP": {
+          "pass": 0,
+          "block": 1,
+          "warn": 1
+        },
+        "FLOW": {
+          "pass": 1,
+          "block": 0,
+          "warn": 0
+        },
+        "DB": {
+          "pass": 0,
+          "block": 2,
+          "warn": 1
+        },
+        "ADV": {
+          "pass": 0,
+          "block": 1,
+          "warn": 0
+        },
+        "CI": {
+          "pass": 0,
+          "block": 3,
+          "warn": 0
+        },
+        "INFRA": {
+          "pass": 0,
+          "block": 1,
+          "warn": 1
+        }
+      },
+      "overlap": "gitleaks-unavailable"
+    },
+    {
+      "repo": "secure-app",
+      "source": "fixtures/secure-app",
+      "verdict": "READY",
+      "exit": 0,
+      "runtimeMs": 1925,
+      "checks": 33,
+      "blockers": 0,
+      "critical": 0,
+      "warnings": 0,
+      "unverified": 0,
+      "byDomain": {
+        "API": {
+          "pass": 3,
+          "block": 0,
+          "warn": 0
+        },
+        "AUTH": {
+          "pass": 5,
+          "block": 0,
+          "warn": 0
+        },
+        "BROWSER": {
+          "pass": 4,
+          "block": 0,
+          "warn": 0
+        },
+        "ENV": {
+          "pass": 1,
+          "block": 0,
+          "warn": 0
+        },
+        "OBS": {
+          "pass": 1,
+          "block": 0,
+          "warn": 0
+        },
+        "PAY": {
+          "pass": 3,
+          "block": 0,
+          "warn": 0
+        },
+        "REPO": {
+          "pass": 2,
+          "block": 0,
+          "warn": 0
+        },
+        "SECRET": {
+          "pass": 2,
+          "block": 0,
+          "warn": 0
+        },
+        "DEP": {
+          "pass": 2,
+          "block": 0,
+          "warn": 0
+        },
+        "FLOW": {
+          "pass": 1,
+          "block": 0,
+          "warn": 0
+        },
+        "DB": {
+          "pass": 3,
+          "block": 0,
+          "warn": 0
+        },
+        "ADV": {
+          "pass": 1,
+          "block": 0,
+          "warn": 0
+        },
+        "CI": {
+          "pass": 3,
+          "block": 0,
+          "warn": 0
+        },
+        "INFRA": {
+          "pass": 2,
+          "block": 0,
+          "warn": 0
+        }
+      },
+      "overlap": "gitleaks-unavailable"
+    }
+  ],
+  "limits": "Observed facts only: verdicts, counts, runtimes. False-positive and unique-finding rates need manual review per repo (see docs/study/METHOD.md)."
+}
